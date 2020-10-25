@@ -9,10 +9,10 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Update services on local machine')
 parser.add_argument('-c', '--config', help='YAML file with the configuration', default='providers.yaml')
-parser.add_argument('-u', '--unattended', help='Force install', action='store_true')
+parser.add_argument('-u', '--unattended', help='Install without asking', action='store_true')
+parser.add_argument('-s', '--service', help='Run for specific service. More than one can be added sepperated by space', nargs='+', default=[])
 
 args = parser.parse_args()
-print(args)
 
 
 def query_yes_no(question, default="yes"):
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     
     for provider_name, module in providers.modules.items():
-        if provider_name in config:
+        if provider_name in config and (len(args.service) == 0 or provider_name in args.service):
             provider = module(config[provider_name])
             latest_version = provider.get_latest_version()
             current_version = provider.get_current_version()
