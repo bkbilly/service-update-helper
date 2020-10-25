@@ -3,9 +3,8 @@
 from urllib import request
 import subprocess
 import os
-import logging
-import sys
 import json
+from aiohttp import ClientSession
 
 
 class Updater():
@@ -16,17 +15,20 @@ class Updater():
         self.latest_version = None
         self.current_version = None
 
-    def get_current_version(self):
+    async def get_current_version(self):
         version_file = f"{self.config['install_dir']}/npm-shrinkwrap.json"
         with open(version_file) as ofile:
             self.current_version = json.loads(ofile.read())['version']
-        
+
         return self.current_version
 
-    def get_latest_version(self):
+    async def get_latest_version(self):
         url = "https://api.github.com/repos/Koenkk/zigbee2mqtt/releases/latest"
-        response = request.urlopen(url)
-        self.latest_version = json.loads(response.read())['tag_name']
+        # response = request.urlopen(url).read()
+        async with ClientSession() as session:
+            async with session.get(url) as resp:
+                response = await resp.text()
+        self.latest_version = json.loads(response)['tag_name']
 
         return self.latest_version
 
@@ -63,27 +65,3 @@ class Updater():
             subprocess.check_output("cp -R data-backup/* data", shell=True, cwd=self.config['install_dir'])
             subprocess.check_output("rm -rf data-backup", shell=True, cwd=self.config['install_dir'])
             subprocess.check_output("/usr/bin/systemctl start zigbee2mqtt.service", shell=True)
-
-
-
-
-if __name__ == "__main__":
-    username = str(subprocess.check_output("whoami").decode('utf-8').strip())
-    if username != "root":
-        logging.critical("You have to be root to run this app, current user is: {}".format(username))
-        sys.exit()
-    
-    
-    logging.basicConfig(
-        filename='/var/log/updater.log',
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
-    
-    agentdvr = UpdateZigbee2mqtt()
-    latest_version = agentdvr.get_latest_version()
-    current_version = agentdvr.get_current_version()
-    if current_version != latest_version and latest_version is not None:
-        agentdvr.install()
-    logging.info("Done")
-

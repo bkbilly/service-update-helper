@@ -58,10 +58,10 @@ class Updater():
         self.latest_version = None
         self.current_version = None
 
-    def get_current_version(self):
+    async def get_current_version(self):
         return self.current_version
 
-    def get_latest_version(self):
+    async def get_latest_version(self):
         return self.latest_version
 
     def install(self):

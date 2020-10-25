@@ -6,9 +6,7 @@ import re
 import subprocess
 import zipfile
 import os
-import logging
-import sys
-
+from aiohttp import ClientSession
 
 
 class Updater():
@@ -23,11 +21,14 @@ class Updater():
         self.latest_version = None
         self.current_version = None
 
-    def get_latest_version(self):
+    async def get_latest_version(self):
         # Download land page for web scraping
-        url_scrap = "https://www.ispyconnect.com/download.aspx"
-        response = request.urlopen(url_scrap)
-        soup = BeautifulSoup(response.read(), 'html.parser')
+        url = "https://www.ispyconnect.com/download.aspx"
+        # response = request.urlopen(url).read()
+        async with ClientSession() as session:
+            async with session.get(url) as resp:
+                response = await resp.text()
+        soup = BeautifulSoup(response, 'html.parser')
 
         for link in soup.find_all('a'):
             zip_href = str(link.get('href'))
@@ -40,7 +41,7 @@ class Updater():
         self.download_dir = self.download_dir.format(self.latest_version)
         return self.latest_version
 
-    def get_current_version(self):
+    async def get_current_version(self):
         if os.path.exists(self.install_fileversion):
             with open(self.install_fileversion, 'r') as version_file:
                 self.current_version = version_file.read()
@@ -68,25 +69,3 @@ class Updater():
                 serv.write("WantedBy=multi-user.target\n")
         subprocess.check_output("/usr/sbin/service agentdvr restart", shell=True)
         self.restart_service()
-
-
-if __name__ == "__main__":
-    username = str(subprocess.check_output("whoami").decode('utf-8').strip())
-    if username != "root":
-        logging.critical("You have to be root to run this app, current user is: {}".format(username))
-        sys.exit()
-    
-    
-    logging.basicConfig(
-        filename='/var/log/updater.log',
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
-    
-    agentdvr = UpdateAgentDVR()
-    latest_version = agentdvr.get_latest_version()
-    current_version = agentdvr.get_current_version()
-    if current_version != latest_version and latest_version is not None:
-        agentdvr.install()
-        logging.info("Done")
-

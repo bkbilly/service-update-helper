@@ -6,6 +6,8 @@ import subprocess
 import providers
 import yaml
 import argparse
+import asyncio
+import timeit
 
 parser = argparse.ArgumentParser(description='Update services on local machine')
 parser.add_argument('-c', '--config', help='YAML file with the configuration', default='providers.yaml')
@@ -43,11 +45,39 @@ def deside_installation(provider):
     if args.unattended:
         provider.install()
     else:
-        if query_yes_no('Start the installation?'):
+        if query_yes_no(f'Start the installation for {provider.service}?'):
             provider.install()
-    
+
+
+async def run_service(provider):
+    runserv_start = timeit.default_timer()
+    latest_version, current_version = await asyncio.gather(
+        provider.get_latest_version(),
+        provider.get_current_version()
+    )
+    runserv_stop = timeit.default_timer()
+    print(f'{provider.service:15} {current_version:15} {latest_version:14} latest={current_version==latest_version} time:{runserv_stop - runserv_start}')
+
+    if latest_version is None:
+        print(f'Error finding latest version for {provider.service}')
+    elif current_version is None:
+        print(f'{provider.service} needs fresh install')
+        deside_installation(provider)
+    elif current_version != latest_version:
+        print(f'{provider.service} needs update')
+        deside_installation(provider)
+
+
+async def main():
+    tasks = []
+    for provider_name, module in providers.modules.items():
+        if provider_name in config and (len(args.service) == 0 or provider_name in args.service):
+            provider = module(config[provider_name])
+            tasks.append(run_service(provider))
+    await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
+    start = timeit.default_timer()
     # Load config
     with open(args.config) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -57,7 +87,7 @@ if __name__ == "__main__":
     if username != "root":
         logging.critical("You have to be root to run this app, current user is: {}".format(username))
         sys.exit()
-    
+
     # Set logging directory
     #logging.basicConfig(
     #    filename='/var/log/updater.log',
@@ -65,22 +95,10 @@ if __name__ == "__main__":
     #    level=logging.INFO
     #)
 
-    
-    for provider_name, module in providers.modules.items():
-        if provider_name in config and (len(args.service) == 0 or provider_name in args.service):
-            provider = module(config[provider_name])
-            latest_version = provider.get_latest_version()
-            current_version = provider.get_current_version()
-            print(f'{provider.service:15} {current_version:15} {latest_version:14} latest={current_version==latest_version}')
+    asyncio.run(main())
+    stop = timeit.default_timer()
 
-            if latest_version is None:
-                print('Error finding latest version')
-            elif current_version is None:
-                print('Needs fresh install')
-                deside_installation(provider)
-            elif current_version != latest_version:
-                print('Needs update')
-                deside_installation(provider)
+    print('Time: ', stop - start)  
 
     #logging.info("Done")
 

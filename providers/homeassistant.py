@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-from urllib import request
 import subprocess
 import os
-import logging
-import sys
 import json
 import re
+from aiohttp import ClientSession
 
 
 class Updater():
@@ -17,20 +15,22 @@ class Updater():
         self.latest_version = None
         self.current_version = None
 
-    def get_current_version(self):
+    async def get_current_version(self):
         try:
             version_pip = subprocess.check_output("pip freeze | grep homeassistant", shell=True).decode("utf-8")
             m = re.search(r'.*==([\d*\.*]*)', version_pip)
             self.current_version = m.group(1)
         except:
             pass
-        
+
         return self.current_version
 
-    def get_latest_version(self):
+    async def get_latest_version(self):
         url = "https://pypi.org/pypi/homeassistant/json"
-        response = request.urlopen(url)
-        self.latest_version = json.loads(response.read())['info']['version']
+        async with ClientSession() as session:
+            async with session.get(url) as resp:
+                response = await resp.text()
+        self.latest_version = json.loads(response)['info']['version']
 
         return self.latest_version
 
@@ -56,28 +56,3 @@ class Updater():
             subprocess.check_output("/usr/bin/systemctl restart homeassistant.service", shell=True)
         else:
             pass
-
-
-
-
-if __name__ == "__main__":
-    username = str(subprocess.check_output("whoami").decode('utf-8').strip())
-    if username != "root":
-        logging.critical("You have to be root to run this app, current user is: {}".format(username))
-        sys.exit()
-    
-    
-    logging.basicConfig(
-        filename='/var/log/updater.log',
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
-    
-    updater = UpdateHomeassistant()
-    latest_version = updater.get_latest_version()
-    current_version = updater.get_current_version()
-    print(latest_version, current_version)
-    #if current_version != latest_version and latest_version is not None:
-    #    updater.install()
-    #logging.info("Done")
-
