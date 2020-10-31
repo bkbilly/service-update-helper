@@ -38,7 +38,7 @@ class Updater():
         if self.current_version is None:
             subprocess.check_output("pip install --upgrade homeassistant", shell=True)
 
-            service_file = "/etc/systemd/system/homeassistant.service"
+            service_file = "/etc/systemd/system/home-assistant.service"
             if not os.path.exists(service_file):
                 with open(service_file, 'w') as serv:
                     serv.write("[Unit]\n")
@@ -50,9 +50,9 @@ class Updater():
                     serv.write("User=root\n\n")
                     serv.write("[Install]\n")
                     serv.write("WantedBy=multi-user.target\n")
-            subprocess.check_output("/usr/bin/systemctl restart homeassistant.service", shell=True)
+            subprocess.check_output("/usr/bin/systemctl restart home-assistant.service", shell=True)
         elif self.current_version != self.latest_version:
             subprocess.check_output("pip install --upgrade homeassistant", shell=True)
-            subprocess.check_output("/usr/bin/systemctl restart homeassistant.service", shell=True)
+            subprocess.check_output("/usr/bin/systemctl restart home-assistant.service", shell=True)
         else:
             pass
