@@ -7,12 +7,15 @@ import providers
 import yaml
 import argparse
 import asyncio
+import json
 import timeit
 
 parser = argparse.ArgumentParser(description='Update services on local machine')
 parser.add_argument('-c', '--config', help='YAML file with the configuration', default='providers.yaml')
 parser.add_argument('-u', '--unattended', help='Install without asking', action='store_true')
 parser.add_argument('-s', '--service', help='Run for specific service. More than one can be added sepperated by space', nargs='+', default=[])
+parser.add_argument('-d', '--display', help="Don't ask for installation/update", action='store_true')
+parser.add_argument('-j', '--json', help='Display results as json', action='store_true')
 
 args = parser.parse_args()
 
@@ -41,31 +44,33 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 
 
-def deside_installation(provider):
-    if args.unattended:
+def deside_installation(provider, query=None):
+    if args.unattended or query is None:
         provider.install()
     else:
-        if query_yes_no(f'Start the installation for {provider.service}?'):
+        if query_yes_no(query):
             provider.install()
 
 
 async def run_service(provider):
+    service_info = {}
     runserv_start = timeit.default_timer()
     latest_version, current_version = await asyncio.gather(
         provider.get_latest_version(),
         provider.get_current_version()
     )
-    runserv_stop = timeit.default_timer()
-    print(f'{provider.service:15} {current_version:15} {latest_version:14} latest={current_version==latest_version} time:{runserv_stop - runserv_start}')
 
-    if latest_version is None:
-        print(f'Error finding latest version for {provider.service}')
-    elif current_version is None:
-        print(f'{provider.service} needs fresh install')
-        deside_installation(provider)
-    elif current_version != latest_version:
-        print(f'{provider.service} needs update')
-        deside_installation(provider)
+    runserv_stop = timeit.default_timer()
+    runserv_total = round(runserv_stop - runserv_start, 3)
+
+    service_info['service'] = provider.service
+    service_info['latest_version'] = latest_version
+    service_info['current_version'] = current_version
+    service_info['total_time'] = runserv_total
+    service_info['latest'] = current_version==latest_version
+    service_info['provider'] = provider
+
+    return service_info
 
 
 async def main():
@@ -74,10 +79,36 @@ async def main():
         if provider_name in config and (len(args.service) == 0 or provider_name in args.service):
             provider = module(config[provider_name])
             tasks.append(run_service(provider))
-    await asyncio.gather(*tasks)
+
+    services_sum = {
+        'srv_toupdate': [],
+        'srv_toinstall': [],
+        'srv_uptodate': [],
+        'needs_update': False,
+    }
+    for provider in await asyncio.gather(*tasks):
+        if provider['current_version'] is None:
+            services_sum['srv_toinstall'].append(provider['service'])
+        elif provider['latest']:
+            services_sum['srv_uptodate'].append(provider['service'])
+        else:
+            services_sum['srv_toupdate'].append(provider['service'])
+            services_sum['needs_update'] = True
+
+        if not args.json:
+            print(f"{provider['service']:20} {provider['current_version']:15} {provider['latest_version']:14} latest={provider['latest']} \ttime={provider['total_time']}s")
+
+        if not args.display:
+            if provider['latest'] is None:
+                print(f'Error finding latest version for {provider.service}')
+            elif provider['current_version'] is None:
+                deside_installation(provider, f'Start fresh installation for {provider["service"]}?')
+            elif not provider['latest']:
+                deside_installation(provider, f'Start update for {provider["service"]}?')
+    if args.json:
+        print(json.dumps(services_sum))
 
 if __name__ == "__main__":
-    start = timeit.default_timer()
     # Load config
     with open(args.config) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -96,9 +127,6 @@ if __name__ == "__main__":
     #)
 
     asyncio.run(main())
-    stop = timeit.default_timer()
-
-    print('Time: ', stop - start)  
 
     #logging.info("Done")
 
