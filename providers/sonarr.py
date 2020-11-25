@@ -4,6 +4,7 @@ import subprocess
 import json
 import re
 from aiohttp import ClientSession
+from datetime import datetime
 
 
 class Updater():
@@ -28,8 +29,14 @@ class Updater():
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 response = await resp.text()
-        m = re.findall(r'>(\d+\.[\d+\.]*)', response)
-        self.latest_version = m[-1]
+        versions = re.findall(r'<a href="\d+\.[\d+\.]*\/">(\d+\.[\d+\.]*)\/<\/a>\W*(\d+-\w+-\d+ \d+:\d+)', response)
+        list_versions = []
+        for version, strdate in versions:
+            verdate = datetime.strptime(strdate, '%d-%b-%Y %H:%M')
+            list_versions.append((version, verdate))
+        list_versions.sort(key=lambda tup: tup[1])
+        #m = re.findall(r'>(\d+\.[\d+\.]*)', response)
+        self.latest_version = list_versions[-1][0]
 
         return self.latest_version
 

@@ -1,0 +1,4 @@
+beautifulsoup4>=4.8.1
+PyYAML>=5.3.1
+ConfigArgParse>=0.13.0
+

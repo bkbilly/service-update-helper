@@ -102,9 +102,9 @@ async def main():
             if provider['latest'] is None:
                 print(f'Error finding latest version for {provider.service}')
             elif provider['current_version'] is None:
-                deside_installation(provider, f'Start fresh installation for {provider["service"]}?')
+                deside_installation(provider['provider'], f'Start fresh installation for {provider["service"]}?')
             elif not provider['latest']:
-                deside_installation(provider, f'Start update for {provider["service"]}?')
+                deside_installation(provider['provider'], f'Start update for {provider["service"]}?')
     if args.json:
         print(json.dumps(services_sum))
 
