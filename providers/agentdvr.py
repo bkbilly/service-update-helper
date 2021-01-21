@@ -42,6 +42,14 @@ class Updater():
         return self.latest_version
 
     async def get_current_version(self):
+        #async with ClientSession() as session:
+        #    async with session.get(self.config['url']) as resp:
+        #        response = await resp.text()
+        #soup = BeautifulSoup(response, 'html.parser')
+        #scripts = soup.find_all("script")
+        #for script in scripts:
+        #    print(regex.findall(r"\{(?:[^{}]|(?R))*\}", script))
+
         if os.path.exists(self.install_fileversion):
             with open(self.install_fileversion, 'r') as version_file:
                 self.current_version = version_file.read()
@@ -68,4 +76,3 @@ class Updater():
                 serv.write("[Install]\n")
                 serv.write("WantedBy=multi-user.target\n")
         subprocess.check_output("/usr/sbin/service agentdvr restart", shell=True)
-        self.restart_service()
