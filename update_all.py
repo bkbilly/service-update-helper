@@ -55,10 +55,15 @@ def deside_installation(provider, query=None):
 async def run_service(provider):
     service_info = {}
     runserv_start = timeit.default_timer()
-    latest_version, current_version = await asyncio.gather(
-        provider.get_latest_version(),
-        provider.get_current_version()
-    )
+    try:
+        latest_version, current_version = await asyncio.gather(
+            provider.get_latest_version(),
+            provider.get_current_version()
+        )
+    except Exception as e:
+        latest_version = '0'
+        current_version = '0'
+        print(e)
 
     runserv_stop = timeit.default_timer()
     runserv_total = round(runserv_stop - runserv_start, 3)
