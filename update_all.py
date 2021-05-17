@@ -63,7 +63,6 @@ async def run_service(provider):
     except Exception as e:
         latest_version = '0'
         current_version = '0'
-        print(e)
 
     runserv_stop = timeit.default_timer()
     runserv_total = round(runserv_stop - runserv_start, 3)
