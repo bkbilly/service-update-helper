@@ -7,7 +7,6 @@ required_methods = ['install', 'service', 'get_current_version', 'get_latest_ver
 
 # iterate through the modules in the current package
 package_dir = str(Path(__file__).resolve().parent)
-print(type(package_dir))
 for (_, module_name, _) in iter_modules([package_dir]):
     updater = getattr(import_module(f"{__name__}.{module_name}"), 'Updater')
     meets_requirements = all(item in dir(updater) for item in required_methods)
