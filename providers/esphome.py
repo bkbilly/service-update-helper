@@ -5,11 +5,11 @@ import os
 import json
 import re
 from aiohttp import ClientSession
-from importlib.metadata import version
+from importlib.metadata import version 
 
 
 class Updater():
-    service = 'Homeassistant'
+    service = 'esphome'
 
     def __init__(self, config=None):
         self.config = config
@@ -18,14 +18,14 @@ class Updater():
 
     async def get_current_version(self):
         try:
-            self.current_version = version('homeassistant')
+            self.current_version = version('esphome')
         except:
             pass
 
         return self.current_version
 
     async def get_latest_version(self):
-        url = "https://pypi.org/pypi/homeassistant/json"
+        url = "https://pypi.org/pypi/esphome/json"
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 response = await resp.text()
@@ -35,23 +35,26 @@ class Updater():
 
     def install(self):
         if self.current_version is None:
-            subprocess.check_output("pip install --upgrade homeassistant", shell=True)
+            subprocess.check_output("pip install --upgrade esphome", shell=True)
 
-            service_file = "/etc/systemd/system/home-assistant.service"
+            service_file = "/etc/systemd/system/esphomeDashboard.service"
             if not os.path.exists(service_file):
                 with open(service_file, 'w') as serv:
                     serv.write("[Unit]\n")
-                    serv.write("Description=Home Assistant\n")
-                    serv.write("After=network.target postgresql.service\n\n")
+                    serv.write("Description=ESPHome Dashboard\n")
+                    serv.write("After=network-online.target\n\n")
                     serv.write("[Service]\n")
-                    serv.write(f"ExecStart=/usr/local/bin/hass -c '{self.config['config_path']}'\n")
+                    serv.write(f"ExecStart=/usr/local/bin/esphome /etc/esphome dashboard --username {self.config['user']} --password {self.config['password']}'\n")
                     serv.write("Type=simple\n")
+                    serv.write("Restart=on-failure\n")
+                    serv.write("RestartSec=5s\n")
                     serv.write("User=root\n\n")
                     serv.write("[Install]\n")
                     serv.write("WantedBy=multi-user.target\n")
-            subprocess.check_output("/usr/bin/systemctl restart home-assistant.service", shell=True)
+            subprocess.check_output("/usr/bin/systemctl restart esphomeDashboard.service", shell=True)
         elif self.current_version != self.latest_version:
-            subprocess.check_output("pip install --upgrade homeassistant", shell=True)
-            subprocess.check_output("/usr/bin/systemctl restart home-assistant.service", shell=True)
+            subprocess.check_output("pip install --upgrade esphome", shell=True)
+            subprocess.check_output("/usr/bin/systemctl restart esphomeDashboard.service", shell=True)
         else:
             pass
+

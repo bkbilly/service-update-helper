@@ -9,6 +9,7 @@ import argparse
 import asyncio
 import json
 import timeit
+from packaging import version
 
 parser = argparse.ArgumentParser(description='Update services on local machine')
 parser.add_argument('-c', '--config', help='YAML file with the configuration', default='providers.yaml')
@@ -56,12 +57,13 @@ async def run_service(provider):
     service_info = {}
     runserv_start = timeit.default_timer()
     try:
-        latest_version, current_version = await asyncio.gather(
-            provider.get_latest_version(),
-            provider.get_current_version()
-        )
+        latest_version = await provider.get_latest_version()
     except Exception as e:
         latest_version = '0'
+
+    try:
+        current_version = await provider.get_current_version()
+    except Exception as e:
         current_version = '0'
 
     runserv_stop = timeit.default_timer()
@@ -71,7 +73,7 @@ async def run_service(provider):
     service_info['latest_version'] = latest_version
     service_info['current_version'] = current_version
     service_info['total_time'] = runserv_total
-    service_info['latest'] = current_version==latest_version
+    service_info['latest'] = version.parse(current_version) >= version.parse(latest_version)
     service_info['provider'] = provider
 
     return service_info

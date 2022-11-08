@@ -14,7 +14,7 @@ class Updater():
         self.current_version = None
 
     async def get_current_version(self):
-        url = f"{self.config['url']}/api/systemstatus?apikey={self.config['api']}"
+        url = f"{self.config['url']}/api/system/status?apikey={self.config['api']}"
         # response = request.urlopen(url).read()
         async with ClientSession() as session:
             async with session.get(url) as resp:

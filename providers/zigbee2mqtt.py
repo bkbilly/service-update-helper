@@ -16,9 +16,10 @@ class Updater():
         self.current_version = None
 
     async def get_current_version(self):
-        version_file = f"{self.config['install_dir']}/npm-shrinkwrap.json"
-        with open(version_file) as ofile:
-            self.current_version = json.loads(ofile.read())['version']
+        version_file = f"{self.config['install_dir']}/package-lock.json"
+        if os.path.exists(version_file):
+            with open(version_file) as ofile:
+                self.current_version = json.loads(ofile.read())['version']
 
         return self.current_version
 

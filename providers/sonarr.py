@@ -25,18 +25,12 @@ class Updater():
         return self.current_version
 
     async def get_latest_version(self):
-        url = "https://download.sonarr.tv/v3/phantom-develop/"
+        url = "https://api.github.com/repos/Sonarr/Sonarr/tags"
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 response = await resp.text()
-        versions = re.findall(r'<a href="\d+\.[\d+\.]*\/">(\d+\.[\d+\.]*)\/<\/a>\W*(\d+-\w+-\d+ \d+:\d+)', response)
-        list_versions = []
-        for version, strdate in versions:
-            verdate = datetime.strptime(strdate, '%d-%b-%Y %H:%M')
-            list_versions.append((version, verdate))
-        list_versions.sort(key=lambda tup: tup[1])
-        #m = re.findall(r'>(\d+\.[\d+\.]*)', response)
-        self.latest_version = list_versions[-1][0]
+        version = json.loads(response)[0]['name']
+        self.latest_version = version
 
         return self.latest_version
 
