@@ -12,6 +12,7 @@ class Updater():
 
     def __init__(self, config=None):
         self.config = config
+        self.changelog = "https://github.com/Koenkk/zigbee2mqtt/releases"
         self.latest_version = None
         self.current_version = None
 

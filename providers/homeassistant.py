@@ -13,6 +13,7 @@ class Updater():
 
     def __init__(self, config=None):
         self.config = config
+        self.changelog = "https://www.home-assistant.io/blog/categories/release-notes/"
         self.latest_version = None
         self.current_version = None
 

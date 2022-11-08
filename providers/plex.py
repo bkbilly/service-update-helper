@@ -12,6 +12,7 @@ class Updater():
 
     def __init__(self, config=None):
         self.config = config
+        self.changelog = 'https://forums.plex.tv/t/plex-media-server/30447'
         self.download_dir = "/var/tmp/plex_{}.zip"
         self.download_url = ""
 

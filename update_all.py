@@ -74,6 +74,7 @@ async def run_service(provider):
     service_info['current_version'] = current_version
     service_info['total_time'] = runserv_total
     service_info['latest'] = version.parse(current_version) >= version.parse(latest_version)
+    service_info['changelog'] = provider.changelog
     service_info['provider'] = provider
 
     return service_info
@@ -102,7 +103,7 @@ async def main():
             services_sum['needs_update'] = True
 
         if not args.json:
-            print(f"{provider['service']:20} {provider['current_version']:15} {provider['latest_version']:14} latest={provider['latest']} \ttime={provider['total_time']}s")
+            print(f"{provider['service']:20} {provider['current_version']:15} {provider['latest_version']:14} latest={provider['latest']} \ttime={provider['total_time']}s \t{provider['changelog']}")
 
         if not args.display:
             if provider['latest'] is None:

@@ -14,6 +14,7 @@ class Updater():
 
     def __init__(self, config=None):
         self.config = config
+        self.changelog = "https://www.ispyconnect.com/producthistory.aspx?productid=27"
         self.install_dir = self.config['install_dir']
         self.install_fileversion = self.install_dir + "/version.txt"
         self.download_dir = "/var/tmp/agentdvr_{}.zip"
