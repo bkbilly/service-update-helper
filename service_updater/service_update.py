@@ -42,13 +42,10 @@ class ServiceUpdate:
                 tasks.append(self.gather_versions(provider))
         for provider in await asyncio.gather(*tasks):
             if setup:
-                print("1st time running")
                 self.setup_discovery(provider)
-            print(provider.current_version, provider.latest_version)
             self.send_info(provider)
 
     async def gather_versions(self, provider):
-        print("checking provider:", provider.service)
         try:
             await provider.get_current_version()
         except Exception as e:
@@ -91,8 +88,6 @@ class ServiceUpdate:
             payload=json.dumps(message),
             retain=True
         )
-        print(topic)
-        print(json.dumps(message))
 
     def send_info(self, provider):
         message = {
@@ -106,5 +101,3 @@ class ServiceUpdate:
             payload=json.dumps(message),
             retain=True
         )
-        print(topic)
-        print(json.dumps(message))
