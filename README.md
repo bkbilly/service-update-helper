@@ -24,6 +24,7 @@ mqtt:
   auth:
     user: user
     pass: pass
+update_interval: 21600
 providers:
   plex:
   pihole:
@@ -46,7 +47,7 @@ providers:
 
 Some prerequirements are required which can be installed using the pip command:
 ```shell
-sudo pip3 install -e .
+sudo pip3 install service-updater
 ```
 
 ## Run

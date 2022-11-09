@@ -4,8 +4,13 @@ import signal
 import yaml
 import time
 import paho.mqtt.client as mqtt
+import importlib.metadata
+import argparse
+import os
 
 from .service_update import ServiceUpdate
+
+version = importlib.metadata.version(__package__ or __name__)
 
 
 class GracefulKiller:
@@ -24,7 +29,7 @@ class MqttObj:
     def __init__(self, config):
         self.config = config
         self.client = self.setup_mqtt()
-        self.updater = ServiceUpdate(self.config, self.client)
+        self.updater = ServiceUpdate(self.config, self.client, version)
 
     def setup_mqtt(self):
         client = mqtt.Client()
@@ -61,11 +66,20 @@ class MqttObj:
 
 
 def main():
-    # config_file = os.path.abspath(args.config)
+    parser = argparse.ArgumentParser(
+        prog="Service Updater",
+        description="Send service update information to MQTT broker")
+    parser.add_argument(
+        "-c", "--config",
+        help="Configuration file",
+        required=True)
+    args = parser.parse_args()
+
+    config_file = os.path.abspath(args.config)
     # config.setup_config(config_file)
     # config.setup_systemd(config_file)
 
-    with open("config.yaml") as f:
+    with open(config_file) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     mqtt_obj = MqttObj(config)
