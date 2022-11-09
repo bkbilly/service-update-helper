@@ -6,31 +6,30 @@ from aiohttp import ClientSession
 
 
 class Updater():
-    service = 'Bazarr'
+    service = 'Radarr'
+    image = "https://brands.home-assistant.io/_/radarr/icon.png"
 
     def __init__(self, config=None):
         self.config = config
-        self.changelog = f"{self.config['url']}/system/releases"
+        self.changelog = f"{self.config['url']}/system/updates"
         self.latest_version = None
         self.current_version = None
 
     async def get_current_version(self):
-        url = f"{self.config['url']}/api/system/status?apikey={self.config['api']}"
-        # response = request.urlopen(url).read()
+        url = f"{self.config['url']}/api/v3/system/status?apikey={self.config['api']}"
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 response = await resp.text()
-        self.current_version = json.loads(response)['data']['bazarr_version']
+        self.current_version = json.loads(response)['version']
 
         return self.current_version
 
     async def get_latest_version(self):
-        url = "https://api.github.com/repos/morpheus65535/bazarr/releases/latest"
-        # response = request.urlopen(url).read()
+        url = "https://api.github.com/repos/Radarr/Radarr/releases"
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 response = await resp.text()
-        self.latest_version = json.loads(response)['tag_name'].replace('v', '')
+        self.latest_version = json.loads(response)[0]['tag_name'].replace('v', '')
 
         return self.latest_version
 

@@ -8,6 +8,7 @@ from aiohttp import ClientSession
 
 class Updater():
     service = 'PI-Hole'
+    image = "https://brands.home-assistant.io/_/pi_hole/icon.png"
 
     def __init__(self, config=None):
         self.config = config

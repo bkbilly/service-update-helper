@@ -10,6 +10,7 @@ from importlib.metadata import version
 
 class Updater():
     service = 'esphome'
+    image = "https://brands.home-assistant.io/_/esphome/icon.png"
 
     def __init__(self, config=None):
         self.config = config

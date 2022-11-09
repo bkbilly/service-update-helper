@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools~=62.3", "wheel~=0.37.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name              = "service_updater"
+version           = "2022.11.0"
+description       = "Gather information about service updates"
+readme            = "README.md"
+keywords          = ["service_updater"]
+requires-python   = ">=3.7.0"
+authors     = [
+    {name="bkbilly", email="bkbilly@hotmail.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Unix",
+]
+dependencies = [
+    "beautifulsoup4>=4.8.1",
+    "PyYAML>=5.3.1",
+    "ConfigArgParse>=0.13.0",
+    "paho-mqtt>=1.5.1",
+]
+
+
+[project.urls]
+"Source Code" = "https://github.com/bkbilly/service-update-helper"
+
+[tool.setuptools.packages.find]
+include = ["service_updater*"]
+
+[project.scripts]
+service_updater = "service_updater.__main__:main"
+

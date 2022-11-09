@@ -3,4 +3,5 @@
 __pycache__
 *.swp
 *.yaml
+*.egg-info
 

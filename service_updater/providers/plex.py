@@ -9,6 +9,7 @@ from aiohttp import ClientSession
 
 class Updater():
     service = 'Plex'
+    image = "https://brands.home-assistant.io/_/plex/icon.png"
 
     def __init__(self, config=None):
         self.config = config

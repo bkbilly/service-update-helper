@@ -9,6 +9,7 @@ from aiohttp import ClientSession
 
 class Updater():
     service = 'Zigbee2mqtt'
+    image = "https://www.zigbee2mqtt.io/logo.png"
 
     def __init__(self, config=None):
         self.config = config

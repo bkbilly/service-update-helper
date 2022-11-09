@@ -11,6 +11,7 @@ from aiohttp import ClientSession
 
 class Updater():
     service = 'AgentDVR'
+    image = "https://brands.home-assistant.io/_/agent_dvr/icon.png"
 
     def __init__(self, config=None):
         self.config = config

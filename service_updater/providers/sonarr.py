@@ -9,6 +9,7 @@ from datetime import datetime
 
 class Updater():
     service = 'Sonarr'
+    image = "https://brands.home-assistant.io/_/sonarr/icon.png"
 
     def __init__(self, config=None):
         self.config = config

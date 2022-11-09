@@ -6,29 +6,32 @@ from aiohttp import ClientSession
 
 
 class Updater():
-    service = 'Radarr'
+    service = 'Bazarr'
+    image = "https://www.bazarr.media/assets/img/logo.png"
 
     def __init__(self, config=None):
         self.config = config
-        self.changelog = f"{self.config['url']}/system/updates"
+        self.changelog = f"{self.config['url']}/system/releases"
         self.latest_version = None
         self.current_version = None
 
     async def get_current_version(self):
-        url = f"{self.config['url']}/api/v3/system/status?apikey={self.config['api']}"
+        url = f"{self.config['url']}/api/system/status?apikey={self.config['api']}"
+        # response = request.urlopen(url).read()
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 response = await resp.text()
-        self.current_version = json.loads(response)['version']
+        self.current_version = json.loads(response)['data']['bazarr_version']
 
         return self.current_version
 
     async def get_latest_version(self):
-        url = "https://api.github.com/repos/Radarr/Radarr/releases"
+        url = "https://api.github.com/repos/morpheus65535/bazarr/releases/latest"
+        # response = request.urlopen(url).read()
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 response = await resp.text()
-        self.latest_version = json.loads(response)[0]['tag_name'].replace('v', '')
+        self.latest_version = json.loads(response)['tag_name'].replace('v', '')
 
         return self.latest_version
 
