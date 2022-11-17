@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name              = "service_updater"
-version           = "2022.11.3"
+version           = "2022.11.4"
 description       = "Gather information about service updates"
 readme            = "README.md"
 keywords          = ["service_updater"]
