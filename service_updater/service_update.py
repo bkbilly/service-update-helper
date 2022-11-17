@@ -12,7 +12,8 @@ version = importlib.metadata.version(__package__ or __name__)
 class ServiceUpdate:
     """docstring for ServiceUpdate"""
 
-    def __init__(self, config, mqttclient):
+    def __init__(self, config, mqttclient, version):
+        self.version = version
         self.mqttclient = mqttclient
         self.config = config
         self.alive = True
@@ -28,7 +29,9 @@ class ServiceUpdate:
         asyncio.run(self.monitor_run(setup))
 
         if self.alive:
-            self.monitor = threading.Timer(25.0, self.monitor_run_thread)
+            self.monitor = threading.Timer(
+                self.config['update_interval'],
+                self.monitor_run_thread)
             self.monitor.start()
 
     async def monitor_run(self, setup=False):
@@ -39,13 +42,10 @@ class ServiceUpdate:
                 tasks.append(self.gather_versions(provider))
         for provider in await asyncio.gather(*tasks):
             if setup:
-                print("1st time running")
                 self.setup_discovery(provider)
-            print(provider.current_version, provider.latest_version)
             self.send_info(provider)
 
     async def gather_versions(self, provider):
-        print("checking provider:", provider.service)
         try:
             await provider.get_current_version()
         except Exception as e:
@@ -71,7 +71,7 @@ class ServiceUpdate:
                 "name": self.config['mqtt']['identifier'],
                 "model": self.config['mqtt']['identifier'],
                 "manufacturer": f"bkbilly",
-                "sw_version": f"Service Updater {version}",
+                "sw_version": f"Service Updater {self.version}",
             },
             "device_class": "firmware",
             "name": provider.service,
@@ -88,8 +88,6 @@ class ServiceUpdate:
             payload=json.dumps(message),
             retain=True
         )
-        print(topic)
-        print(json.dumps(message))
 
     def send_info(self, provider):
         message = {
@@ -103,5 +101,3 @@ class ServiceUpdate:
             payload=json.dumps(message),
             retain=True
         )
-        print(topic)
-        print(json.dumps(message))
