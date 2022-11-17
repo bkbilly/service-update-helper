@@ -57,7 +57,7 @@ class ServiceUpdate:
         return provider
 
     def install(self, provider_name):
-        providers.modules[provider_name].install()
+        providers.modules[provider_name]().install()
 
     def setup_discovery(self, provider):
         message = {
